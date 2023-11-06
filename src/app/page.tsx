@@ -1,70 +1,84 @@
 "use client"
+
 import { ChangeEvent, FormEvent, useState } from 'react';
+import Image from 'next/image';
+import { useSession, signIn, signOut } from "next-auth/react"
+import prisma from './lib/prismaClient';
+import Hamburger from "./components/icons/Hamburger"
+import Search from "./components/icons/Search"
+
 
 export default function Home() {
 
-  const [formValues, setFormValues] = useState({
-    email: '',
-    password: ''
-  });
+    const { data: session } = useSession()
+    const email = session?.user?.email || ""
 
-  const [error, setError] = useState({error:false,text:""})
+    // if (email) {
+    //     const user = prisma.user.findUnique({
+    //         where: {
+    //             email
+    //         },
+    //     })
+    // }
 
-  const handleChange = (e:ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-  };
+    const handleSearch = () => {
 
-  const loginUser = async(e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    const {email, password} = formValues
-
-    const response = await fetch('http://localhost:8000/login', {
-      method: 'POST',
-      credentials:"include",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({email,password}), // Replace with your data
-    });
-
-    const data = await response.json()
-    if(data.error){
-      setError({error:true,text:data.error})
-    }else{
-     window.location.href = "/chat/all"
-    } 
-  }
+    }
 
 
-  return (
-    <main className="h-screen flex flex-col justify-center items-center px-5 py-5">
-      <h3 className="text-center mb-4">Welcome to Chat App</h3>
-      {/* Sign In Form */}
-      <form className='w-full max-w-4xl bg-gray-50 h-fit p-8' onSubmit={loginUser}>
-        <div className='mb-4'>
-          <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Email</label>
-          <div className="relative mt-2 rounded-md shadow-sm">
-            <input value={formValues.email} onChange={handleChange} type="email" name="email" id="email" className="block w-full rounded-md border-0 py-2 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm focus:ring-2 focus:ring-inset focus:ring-indigo-200 sm:text-sm sm:leading-6 text-sm" placeholder="Enter Your Email" />
-          </div>
-        </div>
+    return (
+        <main className="p-[2vh] w-screen min-h-screen" style={{ background: 'rgb(var(--background-start-rgb))' }}>
+            <div className="w-full h-[96vh] flex border border-slate-400 border-opacity-30 rounded-xl overflow-hidden">
+                {/* Left chats option */}
+                <div className="w-full sm:w-[50%] md:w-[40%] xl:w-[30%] bg-slate-50">
+                    <div className="relative mt-1 overflow-hidden w-full">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <Hamburger />
+                        </div>
+                        <input type="text" onChange={handleSearch} name="price" id="price" autoComplete="false" className="pl-14 w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Search for People" />
+                        <div className="absolute inset-y-0 right-4 flex items-center">
+                            <Search />
+                        </div>
+                    </div>
+                    {/* {search && <div className="bg-slate-700 text-xs text-center w-100 py-0.5 text-white">Search Results</div>} */}
 
-        <div className='mb-4'>
-          <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
-          <div className="relative mt-2 rounded-md shadow-sm">
-            <input value={formValues.password} onChange={handleChange} type="password" name="password" id="password" className="block w-full rounded-md border-0 py-2 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-sm focus:ring-2 focus:ring-inset focus:ring-indigo-200 sm:text-sm sm:leading-6 text-sm" placeholder="Enter Your Password" />
-          </div>
-        </div>
+                    {/* {searchResult && <div>
+                        {searchResult.map(user => {
+                            return (
+                                <ChatCard {...user}  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
+                            )
+                        })}
+                    </div>} */}
 
-        {error.error && <p className="text-red-600 text-xs mb-4">{error.text}</p>}
-
-        <button className='bg-green-600 text-white px-4 py-2 rounded-md mt-1 text-sm mb-4 block'>Login</button>
-        <a href="/register" className='text-xs text-blue-700 block mx-auto text-center w-full'>Create Account Instead</a>
-      </form>
-    </main>
-  )
+                    {/* {!search && <div>
+                        {people.map(user => {
+                            return (
+                                <ChatCard {...user} setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName} />
+                            )
+                        })}
+                    </div>} */}
+                </div>
+                {/* Right Chat */}
+                <div className="flex-grow bg-slate-500 flex flex-col-reverse relative">
+                    {/* Type Message Here Input */}
+                    {/* {chatOpened ? <form className="relative mt-1 shadow-sm" onSubmit={sendMsg}>
+                        <input value={messageTyped} autoComplete="false" type="text" id="price" className="w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Enter your Message" onChange={(e) => setMessageTyped(e.target.value)} />
+                        <div className="absolute inset-y-0 right-[-1px] flex items-center overflow-hidden">
+                            <button className="text-sm border p-6 pl-4 bg-green-500 text-white">Send</button>
+                        </div>
+                    </form> : ""} */}
+                    <div className="flex flex-col-reverse p-3 pb-1 overflow-y-scroll no-scrollbar mt-14">
+                        {/* {messages.map(message => {
+                            return <MessageCard {...message}/>
+                        })} */}
+                    </div>
+                    {/* Chat descrption */}
+                    <div className="absolute h-14 w-full bg-white top-0 px-5 py-3 flex items-center">
+                        <Image className="mr-2" src="https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" alt="" width="30" height="30" />
+                        <p className="text-sm mx-1">{/*chatOpenedName*/} chatopenedName</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    )
 }
