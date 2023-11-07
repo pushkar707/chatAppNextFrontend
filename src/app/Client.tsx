@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useSession, signIn, signOut } from "next-auth/react"
 import Hamburger from "./components/icons/Hamburger"
 import Search from "./components/icons/Search"
-import { api } from "./_trpc/api"
 
 
 export default async function Client({user}: {user:User}) {
@@ -14,11 +13,6 @@ export default async function Client({user}: {user:User}) {
     const [search, setsearch] = useState<boolean>(false)
 
     const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
-        const res = await api.searchUser("")
-        if (res?.result){
-            !search && setsearch(true)
-            setsearchResults(res.users)
-        }
     }
 
     return (
