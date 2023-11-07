@@ -3,19 +3,23 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from "next-auth/react"
-import prisma from './lib/prismaClient';
 import Hamburger from "./components/icons/Hamburger"
 import Search from "./components/icons/Search"
 import { api } from "./_trpc/api"
 
 
-export default async function Client({user}: {user:any}) {
-    
+export default async function Client({user}: {user:User}) {
 
-    const handleSearch = () => {
+    const [searchResults, setsearchResults] = useState<(User[] | never[])>([])
+    const [search, setsearch] = useState<boolean>(false)
 
+    const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+        const res = await api.searchUser("")
+        if (res?.result){
+            !search && setsearch(true)
+            setsearchResults(res.users)
+        }
     }
-
 
     return (
         <main className="p-[2vh] w-screen min-h-screen" style={{ background: 'rgb(var(--background-start-rgb))' }}>
@@ -33,13 +37,16 @@ export default async function Client({user}: {user:any}) {
                     </div>
                     {/* {search && <div className="bg-slate-700 text-xs text-center w-100 py-0.5 text-white">Search Results</div>} */}
 
-                    {/* {searchResult && <div>
-                        {searchResult.map(user => {
+                    {searchResults && <div>
+                        {searchResults.map(user => {
                             return (
-                                <ChatCard {...user}  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
+                                <div className='w-full h-[100px]'>
+
+                                </div>
+                                // <ChatCard {...user}  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
                             )
                         })}
-                    </div>} */}
+                    </div>}
 
                     {/* {!search && <div>
                         {people.map(user => {

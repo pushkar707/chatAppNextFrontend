@@ -13,7 +13,7 @@ const Home = async () => {
             email
         },
         include:{
-            recievers:{
+            receivers:{
                 include:{
                     chats: true,
                 }
@@ -21,9 +21,11 @@ const Home = async () => {
         }
     })
     
-  return (
-    <Client user={user}/>
-  )
+ if (user){
+    return (
+        <Client user={user}/>
+      )
+ }
 }
 
 export default Home

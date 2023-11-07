@@ -6,6 +6,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch","fullTextIndex"]
 }
 
 model User {
@@ -14,20 +15,20 @@ model User {
   email     String     @unique
   username  String     @unique
   imageUrl  String?
-  recievers Receiver[]
+  receivers Receiver[]
 }
 
 model Receiver {
   id         String    @id @default(uuid())
-  reciever   User      @relation(fields: [recieverId], references: [id])
-  recieverId String    @unique
+  receiver   User      @relation(fields: [receiverId], references: [id])
+  receiverId String    @unique
   chats      Message[]
 }
 
 model Message {
   id         String    @id @default(uuid())
   message    String
-  time       DateTime
+  time       DateTime @default(now())
   Receiver   Receiver? @relation(fields: [receiverId], references: [id])
   receiverId String?
 
