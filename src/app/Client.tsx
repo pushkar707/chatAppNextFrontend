@@ -53,7 +53,7 @@ export default function Client({user}: {user:User}) {
                     {searching && searchResults && <div>
                         {searchResults.map((thisUser:any) => {
                             return (
-                                <ChatCard setSearching={setSearching} user={thisUser} activeUserId={user.id} chats={thisUser.chats}  setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName}/>
+                                <ChatCard  key={thisUser.id} setSearching={setSearching} user={thisUser} activeUserId={user.id} chats={thisUser.chats}  setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName}/>
                             )
                         })}
                     </div>}
@@ -61,7 +61,7 @@ export default function Client({user}: {user:User}) {
                     {!searching && <div>
                         {user.receivers?.map((thisUser:any)=> {                           
                             return (
-                                <ChatCard user={thisUser.receiver} activeUserId={user.id} chats="" setSearching={setSearching} setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName} />
+                                <ChatCard key={thisUser.id} user={thisUser.receiver} activeUserId={user.id} chats="" setSearching={setSearching} setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName} />
                             )
                         })}
                     </div>}
@@ -77,7 +77,7 @@ export default function Client({user}: {user:User}) {
                     </form> : ""}
                     <div className="flex flex-col-reverse p-3 pb-1 overflow-y-scroll no-scrollbar mt-14">
                         {/* {messages.map(message => {
-                            return <MessageCard {...message}/>
+                            return <MessageCard key={message.id} {...message}/>
                         })} */}
                     </div>
                     {/* Chat descrption */}
