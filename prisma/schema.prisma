@@ -5,8 +5,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["fullTextSearch","fullTextIndex"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 model User {
@@ -15,21 +15,31 @@ model User {
   email     String     @unique
   username  String     @unique
   imageUrl  String?
-  receivers Receiver[]
+  sender Receiver[] @relation("UserToReceiver")
+  receiver Receiver[] @relation("UserToSender")
+
+
+  @@fulltext([username])
 }
 
 model Receiver {
-  id         String    @id @default(uuid())
-  receiver   User      @relation(fields: [receiverId], references: [id])
-  receiverId String    @unique
-  chats      Message[]
+  id         String @id @default(uuid())
+  sender   User   @relation("UserToSender", fields: [senderId], references: [id], onDelete: NoAction)
+  senderId String 
+  reciever   User   @relation("UserToReceiver", fields: [receiverId], references: [id], onDelete: NoAction)
+  receiverId String 
+
+  chats Message[]
+  @@index([receiverId])
+  @@index([senderId])
+  @@unique([senderId,receiverId])
 }
 
 model Message {
   id         String    @id @default(uuid())
   message    String
-  time       DateTime @default(now())
-  Receiver   Receiver? @relation(fields: [receiverId], references: [id])
+  time       DateTime  @default(now())
+  Receiver   Receiver? @relation(fields: [receiverId], references: [id], onDelete: NoAction)
   receiverId String?
 
   @@index([receiverId])

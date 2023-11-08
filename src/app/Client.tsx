@@ -5,14 +5,27 @@ import Image from 'next/image';
 import { useSession, signIn, signOut } from "next-auth/react"
 import Hamburger from "./components/icons/Hamburger"
 import Search from "./components/icons/Search"
+import ChatCard from './components/Home/ChatCard';
 
 
-export default async function Client({user}: {user:User}) {
-
+export default function Client({user}: {user:User}) {
     const [searchResults, setsearchResults] = useState<(User[] | never[])>([])
     const [search, setsearch] = useState<boolean>(false)
+    const [messages, setMessages] = useState("")
+    const [chatOpened, setchatOpened] = useState("")
+    const [chatOpenedName, setchatOpenedName] = useState("")
 
-    const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = async  (username: string) => {
+        if(username.length > 5){
+            const data = await searchUser(username,user.username)
+
+            if(data.exists){
+                setsearchResults(data.users)
+            }else{
+                setsearchResults([])
+            }        
+
+        }
     }
 
     return (
@@ -24,7 +37,7 @@ export default async function Client({user}: {user:User}) {
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <Hamburger />
                         </div>
-                        <input type="text" onChange={handleSearch} name="price" id="price" autoComplete="false" className="pl-14 w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Search for People" />
+                        <input type="text" onChange={(e) => handleSearch(e.target.value)} name="price" id="price" autoComplete="false" className="pl-14 w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Search for People" />
                         <div className="absolute inset-y-0 right-4 flex items-center">
                             <Search />
                         </div>
@@ -32,12 +45,9 @@ export default async function Client({user}: {user:User}) {
                     {/* {search && <div className="bg-slate-700 text-xs text-center w-100 py-0.5 text-white">Search Results</div>} */}
 
                     {searchResults && <div>
-                        {searchResults.map(user => {
+                        {searchResults.map(thisUser => {
                             return (
-                                <div className='w-full h-[100px]'>
-
-                                </div>
-                                // <ChatCard {...user}  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
+                                <ChatCard user={thisUser} activeUserId={user.id} chat=""  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
                             )
                         })}
                     </div>}
@@ -73,4 +83,11 @@ export default async function Client({user}: {user:User}) {
             </div>
         </main>
     )
+}
+
+const searchUser = async (username:string,notUsername:string) => {
+    console.log(notUsername);    
+   const res = await fetch(`/api/user/search/${username}?not=${notUsername}`)
+    const data = await res.json()
+    return data
 }

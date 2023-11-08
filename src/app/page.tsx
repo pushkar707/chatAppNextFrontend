@@ -13,7 +13,8 @@ const Home = async () => {
             email
         },
         include:{
-            receivers:{
+
+            receiver:{
                 include:{
                     chats: true,
                 }

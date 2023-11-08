@@ -41,16 +41,21 @@ export const authOptions: NextAuthOptions = {
 
     callbacks: {
         async signIn({user}) {
-            const username: string = generateUsername(user.name || "")
-            await prisma.user.create({
-                data: {
-                    name:user.name || "",
-                    email: user.email || "",
-                    imageUrl: user.image || "",
-                    username
-                }
-            })
-            
+            console.log(user);            
+            try{
+                const username: string = generateUsername(user.name || "")
+                await prisma.user.create({
+                    data: {
+                        name:user.name || "",
+                        email: user.email || "",
+                        imageUrl: user.image || "",
+                        username
+                    }
+                })
+                
+            }catch(e){
+                console.log(e);                
+            }
             return true
         }
     }
