@@ -25,36 +25,57 @@ export const authOptions: NextAuthOptions = {
             name: "Credentials",
             credentials: {
               name: { label: "Name", type: "text", placeholder:"Your Name" },
-              userName: { label: "Username", type: "text", placeholder:"Unique username" },
+              username: { label: "Username", type: "text", placeholder:"Unique username" },
               email: { label: "Email", type: "email", placeholder:"Email"},
               password: { label: "Password", type: "password", placeholder:"Password"},
+              confirmPassword: { label: "Confirm Password", type: "password", placeholder:"Confirm Password"},
             },
             authorize(credentials: any, req) {
-              // database operations
+              if (credentials.password !== credentials.confirmPassword){
+                return {
+                    id: "1"
+                  }
+              }
               return {
                 id: "1",
-                Email: credentials.email,
+                email: credentials.email,
+                name: credentials.name,
+                username: credentials.username,
+                password: credentials.password,
               };
             },
           }),
     ],
 
     callbacks: {
-        async signIn({user}) {
-            console.log(user);            
+        async signIn({user, credentials}) {
             try{
-                const username: string = generateUsername(user.name || "")
-                await prisma.user.create({
-                    data: {
-                        name:user.name || "",
-                        email: user.email || "",
-                        imageUrl: user.image || "",
-                        username
+                const userExists = await prisma.user.findUnique({
+                    where:{
+                        email:user.email||""
+                    },
+                    select:{
+                        id:true
                     }
                 })
+                if(!userExists &&  user.email && user.name){
+                    const username = credentials?.username as string || generateUsername(user.name)
+                    await prisma.user.create({
+                        data: {
+                            name:user.name || "",
+                            email: user.email || "",
+                            imageUrl: user.image || "",
+                            username 
+                        }
+                    })
+                }else{
+                    if(credentials)
+                        throw new Error("User already exists")
+                }
                 
             }catch(e){
-                console.log(e);                
+                console.log(e);
+                console.log("User already exists");                          
             }
             return true
         }

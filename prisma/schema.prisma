@@ -15,8 +15,8 @@ model User {
   email     String     @unique
   username  String     @unique
   imageUrl  String?
-  sender Receiver[] @relation("UserToReceiver")
-  receiver Receiver[] @relation("UserToSender")
+  connections Receiver[] @relation("UserToReceiver")
+  receivers Receiver[] @relation("UserToSender")
 
 
   @@fulltext([username])
@@ -26,7 +26,7 @@ model Receiver {
   id         String @id @default(uuid())
   sender   User   @relation("UserToSender", fields: [senderId], references: [id], onDelete: NoAction)
   senderId String 
-  reciever   User   @relation("UserToReceiver", fields: [receiverId], references: [id], onDelete: NoAction)
+  receiver   User   @relation("UserToReceiver", fields: [receiverId], references: [id], onDelete: NoAction)
   receiverId String 
 
   chats Message[]

@@ -13,9 +13,9 @@ const Home = async () => {
             email
         },
         include:{
-
-            receiver:{
+            receivers:{
                 include:{
+                    receiver: true,
                     chats: true,
                 }
             }

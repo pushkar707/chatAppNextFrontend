@@ -10,12 +10,14 @@ import ChatCard from './components/Home/ChatCard';
 
 export default function Client({user}: {user:User}) {
     const [searchResults, setsearchResults] = useState<(User[] | never[])>([])
-    const [search, setsearch] = useState<boolean>(false)
+    const [searching, setSearching] = useState<boolean>(false)
     const [messages, setMessages] = useState("")
-    const [chatOpened, setchatOpened] = useState("")
+    const [chatOpenedId, setchatOpenedId] = useState("")
     const [chatOpenedName, setchatOpenedName] = useState("")
+    const [messageTyped, setMessageTyped] = useState("")
 
     const handleSearch = async  (username: string) => {
+        !searching && setSearching(true)
         if(username.length > 5){
             const data = await searchUser(username,user.username)
 
@@ -23,9 +25,13 @@ export default function Client({user}: {user:User}) {
                 setsearchResults(data.users)
             }else{
                 setsearchResults([])
-            }        
-
+            }
         }
+        !username.length && setSearching(false)
+    }
+
+    function sendMsg(event: FormEvent<HTMLFormElement>): void {
+        throw new Error('Function not implemented.');
     }
 
     return (
@@ -42,43 +48,43 @@ export default function Client({user}: {user:User}) {
                             <Search />
                         </div>
                     </div>
-                    {/* {search && <div className="bg-slate-700 text-xs text-center w-100 py-0.5 text-white">Search Results</div>} */}
+                    {searching && <div className="bg-slate-700 text-xs text-center w-100 py-0.5 text-white">Search Results</div>}
 
-                    {searchResults && <div>
-                        {searchResults.map(thisUser => {
+                    {searching && searchResults && <div>
+                        {searchResults.map((thisUser:any) => {
                             return (
-                                <ChatCard user={thisUser} activeUserId={user.id} chat=""  setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName}/>
+                                <ChatCard setSearching={setSearching} user={thisUser} activeUserId={user.id} chats={thisUser.chats}  setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName}/>
                             )
                         })}
                     </div>}
 
-                    {/* {!search && <div>
-                        {people.map(user => {
+                    {!searching && <div>
+                        {user.receivers?.map((thisUser:any)=> {                           
                             return (
-                                <ChatCard {...user} setMessages={setMessages} setchatOpened={setchatOpened} setchatOpenedName={setchatOpenedName} />
+                                <ChatCard user={thisUser.receiver} activeUserId={user.id} chats="" setSearching={setSearching} setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName} />
                             )
                         })}
-                    </div>} */}
+                    </div>}
                 </div>
                 {/* Right Chat */}
                 <div className="flex-grow bg-slate-500 flex flex-col-reverse relative">
                     {/* Type Message Here Input */}
-                    {/* {chatOpened ? <form className="relative mt-1 shadow-sm" onSubmit={sendMsg}>
+                    {chatOpenedId ? <form className="relative mt-1 shadow-sm" onSubmit={sendMsg}>
                         <input value={messageTyped} autoComplete="false" type="text" id="price" className="w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Enter your Message" onChange={(e) => setMessageTyped(e.target.value)} />
                         <div className="absolute inset-y-0 right-[-1px] flex items-center overflow-hidden">
                             <button className="text-sm border p-6 pl-4 bg-green-500 text-white">Send</button>
                         </div>
-                    </form> : ""} */}
+                    </form> : ""}
                     <div className="flex flex-col-reverse p-3 pb-1 overflow-y-scroll no-scrollbar mt-14">
                         {/* {messages.map(message => {
                             return <MessageCard {...message}/>
                         })} */}
                     </div>
                     {/* Chat descrption */}
-                    <div className="absolute h-14 w-full bg-white top-0 px-5 py-3 flex items-center">
+                   {chatOpenedName &&  <div className="absolute h-14 w-full bg-white top-0 px-5 py-3 flex items-center">
                         <Image className="mr-2" src="https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" alt="" width="30" height="30" />
-                        <p className="text-sm mx-1">{/*chatOpenedName*/} chatopenedName</p>
-                    </div>
+                        <p className="text-sm mx-1">{chatOpenedName}</p>
+                    </div>}
                 </div>
             </div>
         </main>

@@ -1,4 +1,4 @@
-export default function generateUsername(name:string, ) {
+export default function generateUsername(name:string) {
     const formattedName = name.toLowerCase().replace(/\s/g, '');
     let username = formattedName;
     const temp_list = [];
