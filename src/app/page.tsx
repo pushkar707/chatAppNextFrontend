@@ -8,19 +8,40 @@ import { authOptions } from './lib/auth';
 const Home = async () => {
     const session = await getServerSession(authOptions)
     const email = session?.user?.email || ""
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
         where: {
             email
         },
         include:{
+            connections:{
+                include:{
+                    sender: true,
+                    chats: {
+                        include:{
+                            sender: true
+                        }
+                    }
+                }
+            },
             receivers:{
                 include:{
                     receiver: true,
-                    chats: true,
+                    chats: {
+                        include:{
+                            sender: true
+                        }
+                    },
                 }
             }
         }
     })
+
+    user?.connections.forEach((connection:any) => {
+        connection.receiver = connection.sender
+        connection.receiverId = connection.senderId
+        user?.receivers.push(connection)
+    })
+    
     
  if (user){
     return (

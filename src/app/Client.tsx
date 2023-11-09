@@ -6,17 +6,19 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import Hamburger from "./components/icons/Hamburger"
 import Search from "./components/icons/Search"
 import ChatCard from './components/Home/ChatCard';
+import MessageCard from './components/Home/MessageCard';
+import { socket } from './lib/socket';
 
 
 export default function Client({user}: {user:User}) {
     const [searchResults, setsearchResults] = useState<(User[] | never[])>([])
     const [searching, setSearching] = useState<boolean>(false)
-    const [messages, setMessages] = useState("")
+    const [messages, setMessages] = useState<any[]>([])
     const [chatOpenedId, setchatOpenedId] = useState("")
     const [chatOpenedName, setchatOpenedName] = useState("")
     const [messageTyped, setMessageTyped] = useState("")
 
-    const handleSearch = async  (username: string) => {
+    const handleSearch = async (username: string) => {
         !searching && setSearching(true)
         if(username.length > 5){
             const data = await searchUser(username,user.username)
@@ -30,9 +32,50 @@ export default function Client({user}: {user:User}) {
         !username.length && setSearching(false)
     }
 
-    function sendMsg(event: FormEvent<HTMLFormElement>): void {
-        throw new Error('Function not implemented.');
+    async function sendMsg(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        const receiverDb : any= user.receivers?.find((thisUser:any) => {
+            return thisUser.receiverId === chatOpenedId
+        })
+        
+        if(receiverDb){
+            const response = await fetch("/api/user/message/send",{
+                method:"POST",
+                headers:{
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({message:messageTyped,receiver:receiverDb.id,senderId:user.id})
+            })
+        }else{
+            console.log("Receiver not found");
+        }
+        
+        
+
+        // const data = await response.json()
+
+        // // Sockets
+        // socket.emit("chatMsg",{sender:user.id,reciever:chatOpenedId});
+        // // socket.emit("msg",messageTyped)
+
+        // // Setting UI to display the msg sent
+        // setMessages(data.chats)
+        // setMessageTyped("")
     }
+
+    // socket.on(user.id,async(socketData) => {
+    //     console.log(socketData);      
+        
+    //     const res1 = await fetch(`http://localhost:8000/chats/${currentUserId}`)
+    //     const data1 = await res1.json()
+    //     // setPeople(data1.people);
+        
+    //     // setchatOpened(socketData.sender)
+    //     const res = await fetch(`http://localhost:8000/message/${socketData.sender}/${currentUserId}`)
+    //     const data = await res.json()
+    //     // setchatOpenedName(data.name)
+    //     // setMessages(data.chats)
+    // })
 
     return (
         <main className="p-[2vh] w-screen min-h-screen" style={{ background: 'rgb(var(--background-start-rgb))' }}>
@@ -43,7 +86,7 @@ export default function Client({user}: {user:User}) {
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <Hamburger />
                         </div>
-                        <input type="text" onChange={(e) => handleSearch(e.target.value)} name="price" id="price" autoComplete="false" className="pl-14 w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Search for People" />
+                        <input type="text" onChange={(e) => handleSearch(e.target.value)} autoComplete="false" className="pl-14 w-full p-3 text-sm border-l border-slate-400 border-opacity-30 outline-none" placeholder="Search for People" />
                         <div className="absolute inset-y-0 right-4 flex items-center">
                             <Search />
                         </div>
@@ -53,15 +96,15 @@ export default function Client({user}: {user:User}) {
                     {searching && searchResults && <div>
                         {searchResults.map((thisUser:any) => {
                             return (
-                                <ChatCard  key={thisUser.id} setSearching={setSearching} user={thisUser} activeUserId={user.id} chats={thisUser.chats}  setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName}/>
+                                <ChatCard key={thisUser.id} setSearching={setSearching} user={thisUser} activeUserId={user.id} chats={thisUser.chats}  setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName}/>
                             )
                         })}
                     </div>}
 
                     {!searching && <div>
-                        {user.receivers?.map((thisUser:any)=> {                           
+                        {user.receivers?.map((thisUser:any)=> {                
                             return (
-                                <ChatCard key={thisUser.id} user={thisUser.receiver} activeUserId={user.id} chats="" setSearching={setSearching} setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName} />
+                                <ChatCard key={thisUser.id} user={thisUser.receiver} activeUserId={user.id} chats={thisUser.chats} setSearching={setSearching} setMessages={setMessages} setchatOpenedId={setchatOpenedId} setchatOpenedName={setchatOpenedName} />
                             )
                         })}
                     </div>}
@@ -75,10 +118,10 @@ export default function Client({user}: {user:User}) {
                             <button className="text-sm border p-6 pl-4 bg-green-500 text-white">Send</button>
                         </div>
                     </form> : ""}
-                    <div className="flex flex-col-reverse p-3 pb-1 overflow-y-scroll no-scrollbar mt-14">
-                        {/* {messages.map(message => {
-                            return <MessageCard key={message.id} {...message}/>
-                        })} */}
+                    <div className="flex flex-col p-3 pb-1 overflow-y-scroll no-scrollbar mt-14">
+                        {messages.map(message => {
+                            return <MessageCard key={message.id} user={user} {...message}/>
+                        })}
                     </div>
                     {/* Chat descrption */}
                    {chatOpenedName &&  <div className="absolute h-14 w-full bg-white top-0 px-5 py-3 flex items-center">

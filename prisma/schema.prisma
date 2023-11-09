@@ -10,37 +10,41 @@ generator client {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  name      String
-  email     String     @unique
-  username  String     @unique
-  imageUrl  String?
+  id          String     @id @default(uuid())
+  name        String
+  email       String     @unique
+  username    String     @unique
+  imageUrl    String?
   connections Receiver[] @relation("UserToReceiver")
-  receivers Receiver[] @relation("UserToSender")
-
+  receivers   Receiver[] @relation("UserToSender")
+  Messages    Message[]
 
   @@fulltext([username])
 }
 
 model Receiver {
   id         String @id @default(uuid())
-  sender   User   @relation("UserToSender", fields: [senderId], references: [id], onDelete: NoAction)
-  senderId String 
+  sender     User   @relation("UserToSender", fields: [senderId], references: [id], onDelete: NoAction)
+  senderId   String
   receiver   User   @relation("UserToReceiver", fields: [receiverId], references: [id], onDelete: NoAction)
-  receiverId String 
+  receiverId String
 
   chats Message[]
+
+  @@unique([senderId, receiverId])
   @@index([receiverId])
   @@index([senderId])
-  @@unique([senderId,receiverId])
 }
 
 model Message {
-  id         String    @id @default(uuid())
-  message    String
-  time       DateTime  @default(now())
-  Receiver   Receiver? @relation(fields: [receiverId], references: [id], onDelete: NoAction)
-  receiverId String?
+  id           String    @id @default(uuid())
+  message      String
+  time         DateTime  @default(now())
+  Receiver     Receiver? @relation(fields: [receiverId], references: [id], onDelete: NoAction)
+  receiverId   String?
+  sender       User      @relation(fields: [senderUserId], references: [id], onDelete: NoAction)
+  senderUserId String
 
   @@index([receiverId])
+  @@index([senderUserId])
 }
