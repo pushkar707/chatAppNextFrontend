@@ -33,7 +33,7 @@ function ChatCard({user,activeUserId,chats,setMessages,setchatOpenedId,setchatOp
         <Image className="mr-2" src="https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" alt="" width="55" height="55" />
         <div>
             <p className="text-sm mb-1">{username}</p>
-            {chats && chats.length ? <p className="text-xs">{chats[0].message}</p> : ""}
+            {chats && chats.length ? <p className="text-xs">{chats[chats.length-1].message}</p> : ""}
         </div>
     </div>
   )

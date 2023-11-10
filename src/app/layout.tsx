@@ -18,7 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning={true}>
-        <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+        <NextAuthSessionProvider>
+        {/* <SocketContext.Provider value={socket}> */}
+          {children}
+        {/* </SocketContext.Provider> */}
+          </NextAuthSessionProvider>
       </body>
     </html>
   )

@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState, useContext } from 'react';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from "next-auth/react"
 import Hamburger from "./components/icons/Hamburger"
@@ -8,6 +8,8 @@ import Search from "./components/icons/Search"
 import ChatCard from './components/Home/ChatCard';
 import MessageCard from './components/Home/MessageCard';
 import { socket } from './lib/socket';
+import { revalidatePath } from 'next/cache';
+// import { SocketContext } from './components/socket_context/context';
 
 
 export default function Client({user}: {user:User}) {
@@ -17,6 +19,7 @@ export default function Client({user}: {user:User}) {
     const [chatOpenedId, setchatOpenedId] = useState("")
     const [chatOpenedName, setchatOpenedName] = useState("")
     const [messageTyped, setMessageTyped] = useState("")
+    // const [people, setpeople] = useState(user.receivers)
 
     const handleSearch = async (username: string) => {
         !searching && setSearching(true)
@@ -39,6 +42,7 @@ export default function Client({user}: {user:User}) {
         })
         
         if(receiverDb){
+            setMessageTyped("")
             const response = await fetch("/api/user/message/send",{
                 method:"POST",
                 headers:{
@@ -46,36 +50,30 @@ export default function Client({user}: {user:User}) {
                 },
                 body: JSON.stringify({message:messageTyped,receiver:receiverDb.id,senderId:user.id})
             })
+
+            const data = await response.json()
+            // Sockets
+            setMessages(messages => {
+                return [...messages, data.message]
+            })
+
+            let receiverId: string = await data.message.Receiver.receiverId
+            
+            if(receiverId == user.id){                
+                receiverId = await data.message.Receiver.senderId
+            }
+            
+            socket.emit("chatMsg",{receiverDb: receiverDb.id, receiverId});
         }else{
             console.log("Receiver not found");
         }
-        
-        
-
-        // const data = await response.json()
-
-        // // Sockets
-        // socket.emit("chatMsg",{sender:user.id,reciever:chatOpenedId});
-        // // socket.emit("msg",messageTyped)
-
-        // // Setting UI to display the msg sent
-        // setMessages(data.chats)
-        // setMessageTyped("")
     }
 
-    // socket.on(user.id,async(socketData) => {
-    //     console.log(socketData);      
-        
-    //     const res1 = await fetch(`http://localhost:8000/chats/${currentUserId}`)
-    //     const data1 = await res1.json()
-    //     // setPeople(data1.people);
-        
-    //     // setchatOpened(socketData.sender)
-    //     const res = await fetch(`http://localhost:8000/message/${socketData.sender}/${currentUserId}`)
-    //     const data = await res.json()
-    //     // setchatOpenedName(data.name)
-    //     // setMessages(data.chats)
-    // })
+    socket.on(user.id,async(socketData) => {
+        const res = await fetch("/api/user/message/"+socketData.receiverDb+"/all")
+        const data = await res.json()
+        setMessages(data.messages)
+    })    
 
     return (
         <main className="p-[2vh] w-screen min-h-screen" style={{ background: 'rgb(var(--background-start-rgb))' }}>

@@ -17,6 +17,9 @@ const Home = async () => {
                 include:{
                     sender: true,
                     chats: {
+                        orderBy: {
+                            time: 'asc'
+                        },
                         include:{
                             sender: true
                         }
@@ -27,6 +30,9 @@ const Home = async () => {
                 include:{
                     receiver: true,
                     chats: {
+                        orderBy: {
+                            time: 'asc'
+                        },
                         include:{
                             sender: true
                         }
